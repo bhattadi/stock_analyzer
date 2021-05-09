@@ -14,35 +14,61 @@ import torch.nn.functional as F
 from sklearn.svm import SVR
 
 inputs = 5
-ticker = "MSFT"
-training_history = yf.download(ticker, start = "2019-01-01", end = "2020-12-31", period = "1d")
+ticker = 'MSFT'
+# ticker = input('Enter Stock Ticker: ')
+training_history = yf.download(ticker, period= "max", interval='1mo')
+print('Number of history points: ', len(training_history))
 
 # Plot the data of this stock over 2020
-training_history['Adj Close'].plot(label=ticker)
-plt.xlabel("Date")
-plt.ylabel("Adjusted")
-plt.title("Microsoft Price data")
-plt.legend(loc="upper right")
-plt.show()
-plt.savefig('microsoft_details.png')
+# print(len(training_history['Adj Close']))
+# training_history['Adj Close'].plot(label=ticker)
+# plt.xlabel("Date")
+# plt.ylabel("Adjusted")
+# plt.title("Microsoft Price data")
+# plt.legend(loc="upper right")
+# plt.show()
+# plt.savefig('microsoft_details.png')
 
 # Assign values to each date
 start = 0
-
 X_train = []
 Y_train = []
 
-
+# Construct the training data
 for i, row in training_history.iterrows():
     # add all the numbers for num rows into a vector
     X_train.append(start)
     start += 1
 
-    # add all the adjacent closing price
-    avg_price = row['Adj Close']
-    Y_train.append(avg_price)
+    # For the first data point assume no change
+    if start == 1:
+        Y_train.append(0)
+        continue
 
-X_test = np.arange(start, start+30, 1).reshape(-1,1)
+    # Find percent change in adjusted closing price
+    percent_change = (row['Adj Close'] - training_history['Adj Close'][start-2]) / training_history['Adj Close'][start-2]
+    Y_train.append(percent_change)
+    print(i)
+
+# Creating Testing Data
+print('Creating test data')
+X_test = np.arange(start, start+10, 1).reshape(-1,1)
+
+# Construct the testing data
+for i, row in training_history.iterrows():
+    print(i)
+    # add all the numbers for num rows into a vector
+    X_train.append(start)
+    start += 1
+
+    # For the first data point assume no change
+    if start == 1:
+        Y_train.append(0)
+        continue
+
+    # Find percent change in adjusted closing price
+    percent_change = (row['Adj Close'] - training_history['Adj Close'][start-2]) / training_history['Adj Close'][start-2]
+    Y_train.append(percent_change)
 Y_test = []
 
 # Define the model
