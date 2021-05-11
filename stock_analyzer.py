@@ -19,57 +19,35 @@ ticker = 'MSFT'
 training_history = yf.download(ticker, period= "max", interval='1mo')
 print('Number of history points: ', len(training_history))
 
-# Plot the data of this stock over 2020
-# print(len(training_history['Adj Close']))
-# training_history['Adj Close'].plot(label=ticker)
-# plt.xlabel("Date")
-# plt.ylabel("Adjusted")
-# plt.title("Microsoft Price data")
-# plt.legend(loc="upper right")
-# plt.show()
-# plt.savefig('microsoft_details.png')
-
 # Assign values to each date
 start = 0
-X_train = []
-Y_train = []
+input_to_model = []
+output_to_model = []
 
-# Construct the training data
+# Preprocess all historical data
 for i, row in training_history.iterrows():
     # add all the numbers for num rows into a vector
-    X_train.append(start)
+    input_to_model.append(start)
     start += 1
 
     # For the first data point assume no change
     if start == 1:
-        Y_train.append(0)
+        output_to_model.append(0)
         continue
 
     # Find percent change in adjusted closing price
-    percent_change = (row['Adj Close'] - training_history['Adj Close'][start-2]) / training_history['Adj Close'][start-2]
-    Y_train.append(percent_change)
-    print(i)
+    initial = row['Adj Close']
+    new_val = training_history['Adj Close'][start-2]
+    percent_change = (initial - new_val) / new_val
+    print('initial: ' , initial, 'new val: ', new_val, 'percent_change: ', percent_change)
+    output_to_model.append(percent_change)
 
-# Creating Testing Data
-print('Creating test data')
-X_test = np.arange(start, start+10, 1).reshape(-1,1)
+# Split the output-input pairs into training and testing data (80% train & 20% test)
+X_train = input_to_model[:round(len(input_to_model)*0.8)]
+Y_train = output_to_model[:round(len(output_to_model)*0.8)]
 
-# Construct the testing data
-for i, row in training_history.iterrows():
-    print(i)
-    # add all the numbers for num rows into a vector
-    X_train.append(start)
-    start += 1
-
-    # For the first data point assume no change
-    if start == 1:
-        Y_train.append(0)
-        continue
-
-    # Find percent change in adjusted closing price
-    percent_change = (row['Adj Close'] - training_history['Adj Close'][start-2]) / training_history['Adj Close'][start-2]
-    Y_train.append(percent_change)
-Y_test = []
+X_test = input_to_model[round(len(input_to_model)*0.8):]
+Y_test = output_to_model[round(len(output_to_model)*0.8):]
 
 # Define the model
 model = SVR()
@@ -83,6 +61,6 @@ model.fit(X_train, Y_train)
 
 print("Number of " + ticker + " stock dates trained on: " + str(start))
 
+# Run Predictions on the last 12 records
 results = model.predict(X_test)
-
 print(results)
