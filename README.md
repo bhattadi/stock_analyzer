@@ -1,2 +1,4 @@
 # stock_analyzer
-This project is to use the yfinance library to analyze stock prices and build a neural network to predict future prices
+This project uses the yfinance API and Sklearn Python Library to analyze stock prices and build a neural network to predict next day stock movement predictions. The model is trained on adjusted prices for different stocks with the all available historical data except the most recent adjusted price. The trained model then predicts whether the price will increase or decrease. A correct prediction indicates that the model predicted the stock price would increase and the market data showed it did actually increase. 
+
+The stock tickers excel sheet was found from https://investexcel.net/all-yahoo-finance-stock-tickers/ 
